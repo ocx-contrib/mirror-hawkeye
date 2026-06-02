@@ -1,0 +1,18 @@
+---
+title: HawkEye
+description: License header checker and formatter
+keywords: hawkeye,license,header,spdx,licenseheader,compliance,lint
+---
+
+# HawkEye
+
+HawkEye is a simple license-header checker and formatter. It verifies that every source file in a project starts with the expected license header, can apply or update headers in place (`format`), strip them (`remove`), and integrates with CI to enforce header policy. Configuration lives in a `licenserc.toml` file with an inline or file-based header template.
+
+## What's included
+
+- **hawkeye** — license header check, format, and remove CLI
+
+## Links
+
+- [HawkEye Documentation](https://github.com/korandoru/hawkeye#readme)
+- [HawkEye on GitHub](https://github.com/korandoru/hawkeye)

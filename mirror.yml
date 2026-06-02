@@ -1,0 +1,95 @@
+name: hawkeye
+target:
+  # NOTE: this is a DEV mirror — it targets dev.ocx.sh, NOT prod ocx.sh.
+  # Ported verbatim from the monorepo entry (ocx/mirrors/hawkeye). The user
+  # decides whether to promote it to ocx.sh.
+  registry: dev.ocx.sh
+  repository: hawkeye
+
+source:
+  type: github_release
+  owner: korandoru
+  repo: hawkeye
+  tag_pattern: "^v(?P<version>\\d+\\.\\d+\\.\\d+)$"
+
+# hawkeye ships per-arch archives. Linux has both gnu and musl builds; we
+# prefer gnu (matches the other gnu-libc tools in this fleet). Patterns are
+# anchored ^…$ to exclude the .sha256 sidecars.
+assets:
+  linux/amd64:
+    - "^hawkeye-x86_64-unknown-linux-gnu\\.tar\\.xz$"
+  linux/arm64:
+    - "^hawkeye-aarch64-unknown-linux-gnu\\.tar\\.xz$"
+  darwin/amd64:
+    - "^hawkeye-x86_64-apple-darwin\\.tar\\.xz$"
+  darwin/arm64:
+    - "^hawkeye-aarch64-apple-darwin\\.tar\\.xz$"
+  windows/amd64:
+    - "^hawkeye-x86_64-pc-windows-msvc\\.zip$"
+
+# Linux/darwin tarballs wrap the binary in a `hawkeye-<triple>/` directory
+# (binary at the wrapper root, no bin/) → strip_components: 1. The Windows
+# zip is FLAT — `hawkeye.exe` sits at the archive root — so it needs
+# strip_components: 0, or the binary itself would be stripped.
+asset_type:
+  default:
+    type: archive
+    strip_components: 1
+  platforms:
+    windows/amd64:
+      type: archive
+      strip_components: 0
+
+# After stripping, `hawkeye`/`hawkeye.exe` lands directly at the content root
+# on every platform → a single metadata.json with PATH=${installPath} works.
+metadata:
+  default: metadata.json
+
+skip_prereleases: true
+cascade: true
+build_timestamp: none
+
+versions:
+  # linux/arm64 (aarch64-unknown-linux-gnu) first shipped at v6.0.4; v6.0.0–
+  # v6.0.3 ship no linux/arm64 asset, which would silently skip that platform
+  # on those backfills. Floor is bumped past the introduction so every
+  # declared platform resolves on every in-range version.
+  min: "6.0.4"
+  new_per_run: 10
+  poll_interval: "0 */6 * * *"
+
+verify:
+  github_asset_digest: true
+
+concurrency:
+  max_downloads: 8
+  max_bundles: 4
+  max_pushes: 2
+  rate_limit_ms: 100
+  max_retries: 3
+  compression_threads: 0
+
+tests:
+  - name: smoke
+    script: tests/smoke.star
+
+platforms:
+  linux/amd64:
+    runner: ubuntu-latest
+  linux/arm64:
+    runner: ubuntu-24.04-arm
+  # darwin/amd64 (Intel) tests on the arm64 macos-14 runner via Rosetta 2
+  # transparent translation. Never native macos-13 (Intel pool exhausted →
+  # push deadlock).
+  darwin/amd64:
+    runner: macos-14
+  darwin/arm64:
+    runner: macos-14
+    shell: bash
+  windows/amd64:
+    runner: windows-latest
+    shell: pwsh
+
+notify:
+  discord:
+    webhook_secret: OCX_MIRROR_DISCORD_HOOK
