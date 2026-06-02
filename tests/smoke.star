@@ -23,15 +23,16 @@ LICENSERC = "\n".join([
 ]) + "\n"
 ocx.write_file("licenserc.toml", LICENSERC)
 
-HEADER = "# Copyright 2026 OCX. Licensed under the Apache License, Version 2.0.\n"
-
 # Tier 3a: a file WITHOUT the header must FAIL `check` (non-zero exit).
 ocx.write_file("check_me.py", "print('no header here')\n")
 r_missing = ocx.run(HAWKEYE, "check")
 expect.ne(r_missing.exit_code, 0)
 
-# Tier 3b: the SAME file WITH the header must PASS `check` (exit 0). This is
-# the strongest liveness proof — it exercises the real header-matching path.
-ocx.write_file("check_me.py", HEADER + "print('has header')\n")
+# Tier 3b: let `format` insert hawkeye's OWN rendered header (correct comment
+# style + the blank-line separator it requires) rather than hand-crafting a
+# header that might not match byte-for-byte. `format` exits non-zero when it
+# modifies a file (fixer semantics), so its exit code is not asserted; the
+# proof is that `check` then PASSES — exercising the real header-matching path.
+ocx.run(HAWKEYE, "format")
 r_ok = ocx.run(HAWKEYE, "check")
 expect.ok(r_ok)
