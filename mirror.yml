@@ -1,9 +1,6 @@
 name: hawkeye
 target:
-  # NOTE: this is a DEV mirror — it targets dev.ocx.sh, NOT prod ocx.sh.
-  # Ported verbatim from the monorepo entry (ocx/mirrors/hawkeye). The user
-  # decides whether to promote it to ocx.sh.
-  registry: dev.ocx.sh
+  registry: ocx.sh
   repository: hawkeye
 
 source:

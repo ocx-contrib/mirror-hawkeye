@@ -189,15 +189,15 @@ jobs:
               RC=0
               if [ "${TEST_KIND}" = "command" ]; then
                 TEST_CMD=$(echo "${TESTS_JSON}" | jq -r ".[$i].command")
-                ocx package test --platform "${{ matrix.platform }}" --identifier "dev.ocx.sh/hawkeye:${VERSION}" "${BUNDLE}" -- \
+                ocx package test --platform "${{ matrix.platform }}" --identifier "ocx.sh/hawkeye:${VERSION}" "${BUNDLE}" -- \
                   ${{ matrix.shell }} -c "${TEST_CMD}" || RC=$?
               elif [ "${TEST_KIND}" = "script" ]; then
                 TEST_SCRIPT=$(echo "${TESTS_JSON}" | jq -r ".[$i].script")
-                ocx package test --platform "${{ matrix.platform }}" --identifier "dev.ocx.sh/hawkeye:${VERSION}" "${BUNDLE}" \
+                ocx package test --platform "${{ matrix.platform }}" --identifier "ocx.sh/hawkeye:${VERSION}" "${BUNDLE}" \
                   --script "${TEST_SCRIPT}" || RC=$?
               else
                 TEST_INLINE=$(echo "${TESTS_JSON}" | jq -r ".[$i].script_inline")
-                printf '%s' "${TEST_INLINE}" | ocx package test --platform "${{ matrix.platform }}" --identifier "dev.ocx.sh/hawkeye:${VERSION}" "${BUNDLE}" \
+                printf '%s' "${TEST_INLINE}" | ocx package test --platform "${{ matrix.platform }}" --identifier "ocx.sh/hawkeye:${VERSION}" "${BUNDLE}" \
                   --script - || RC=$?
               fi
               END=$(date +%s)
@@ -278,11 +278,11 @@ jobs:
       # native-credential fallback (`get_docker_auth` in crates/ocx_lib/src/auth.rs).
       # Env-var auth (`OCX_AUTH_<REG>_USER/_TOKEN`) takes precedence over the
       # docker fallback inside ocx, so do NOT also export those vars here.
-      - name: Login to dev.ocx.sh
+      - name: Login to ocx.sh
         if: ${{ steps.creds.outputs.have == 'true' }}
         run: |
           echo "${{ secrets.OCX_MIRROR_REGISTRY_TOKEN }}" \
-            | docker login dev.ocx.sh \
+            | docker login ocx.sh \
                 -u "${{ secrets.OCX_MIRROR_REGISTRY_USER }}" \
                 --password-stdin
       - name: Push

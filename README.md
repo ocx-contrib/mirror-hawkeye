@@ -1,12 +1,8 @@
 # mirror-hawkeye
 
 OCX mirror for [HawkEye](https://github.com/korandoru/hawkeye). Publishes
-GitHub releases to `dev.ocx.sh/hawkeye` with cascade tags after a smoke
+GitHub releases to `ocx.sh/hawkeye` with cascade tags after a smoke
 test per `(version, platform)`.
-
-> **Dev target.** This mirror points at `dev.ocx.sh`, not prod `ocx.sh`.
-> Promote by editing `target.registry` in `mirror.yml` (then regenerate the
-> workflows).
 
 ## Editing
 
