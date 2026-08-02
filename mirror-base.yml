@@ -1,0 +1,93 @@
+# Shared base for every spec in this repository (hawkeye).
+#
+# NOT a spec: it has no name/target/source and is never loaded on its own.
+# Everything a package owns — name, target, source, assets, asset_type,
+# bin_scan, metadata, catalog, tests, versions, announce, annotations — stays
+# in that package's own mirror.yml.
+#
+# ⚠️ `extends:` is a SHALLOW merge of top-level keys. A spec that sets a key
+# below replaces that block OUTRIGHT — there is no per-key merge. `platforms:`
+# is where this bites: it carries BOTH the runner matrix and the container
+# legs, so a child that restates it to tweak one runner silently drops every
+# `containers:` entry. Nothing reds — the legs simply stop existing, and every
+# os.features claim in that spec goes back to being merely asserted. Restate
+# `platforms:` IN FULL or not at all.
+
+skip_prereleases: true
+cascade: true
+
+# The fleet rule, and `ocx-mirror package validate` WARNs on anything else with
+# `cascade: true`: a cascade tag (`latest`, `X`, `X.Y`) re-points on every
+# re-publish; without a build segment the new manifest reuses the bare version
+# tag and orphans the prior digest for registry GC, breaking any `@sha256:` pin
+# in a consumer's ocx.lock. hawkeye versions as bare semver, so there is no
+# existing +build segment for `date` to collide with — the `none` exception
+# (upstream versions that already carry `+YYYYMMDD`, where `date` empties the
+# mirror) does not apply here. This replaces the flat layout's
+# `build_timestamp: none`, which predates the fleet rule; nothing is published
+# at the new `hawkeye/hawkeye` coordinate yet, so the change costs no orphaned
+# digest — and it is only free before the first publish.
+build_timestamp: date
+
+verify:
+  github_asset_digest: true
+
+concurrency:
+  # Assets are ~4 MB .tar.xz / ~5 MB .zip archives around a single binary.
+  max_downloads: 8
+  max_bundles: 4
+  max_pushes: 2
+  rate_limit_ms: 100
+  max_retries: 3
+  compression_threads: 0
+
+# ─── Platform matrix ────────────────────────────────────────────────────────
+#
+# `os.features` states what an artifact REQUIRES OF THE HOST — it is not a
+# label for how it was built. Upstream ships BOTH a `-gnu` and a `-musl` build
+# per Linux arch; this mirror carries only the musl one, which is fully static
+# (measured — evidence above hawkeye/mirror.yml's `assets:`). A static binary
+# requires nothing, so both Linux keys are BARE. Tagging them `+libc.musl`
+# would be a false requirement that hid them from every glibc host.
+#
+# A bare key claims universality, so it must prove it: ubuntu (glibc) + alpine
+# (musl) + fedora (different glibc vintage). The alpine leg IS the proof —
+# drop it and the universal claim is merely asserted.
+#
+# A future package here whose libc measurement differs must restate this whole
+# block in its own spec — see the shallow-merge warning at the top.
+platforms:
+  linux/amd64:
+    runner: ubuntu-latest
+    containers:
+      - { image: "ubuntu:24.04", shell: bash }
+      - { image: "alpine:3.20",  shell: sh }
+      - { image: "fedora:40",    shell: bash }
+  linux/arm64:
+    # arm64 container legs run natively — no qemu — so the runner arch must
+    # match the platform or the renderer reds the leg up front.
+    runner: ubuntu-24.04-arm
+    containers:
+      - { image: "ubuntu:24.04", shell: bash }
+      - { image: "alpine:3.20",  shell: sh }
+      - { image: "fedora:40",    shell: bash }
+  darwin/amd64:
+    # Intel slice tested on the arm64 macos-14 runner via Rosetta 2 — GitHub's
+    # native macos-13 Intel pool is exhausted and deadlocks the push job.
+    runner: macos-14
+    prefix: ["arch", "-x86_64"]
+  darwin/arm64:
+    runner: macos-14
+    shell: bash
+  windows/amd64:
+    runner: windows-latest
+    shell: pwsh
+  # No windows/arm64 — upstream publishes only `x86_64-pc-windows-msvc`.
+  #
+  # No `containers:` on darwin or windows — those runners have no Linux
+  # container engine, and the key is rejected at spec load.
+
+notify:
+  discord:
+    webhook_secret: OCX_MIRROR_DISCORD_HOOK
+    user_id: "227748867204972545"  # pinged in-message on failures
