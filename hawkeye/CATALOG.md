@@ -14,5 +14,5 @@ HawkEye is a simple license-header checker and formatter. It verifies that every
 
 ## Links
 
-- [HawkEye Documentation](https://github.com/korandoru/hawkeye#readme)
-- [HawkEye on GitHub](https://github.com/korandoru/hawkeye)
+- [HawkEye Documentation](https://github.com/fast/hawkeye#readme)
+- [HawkEye on GitHub](https://github.com/fast/hawkeye)

@@ -1,7 +1,7 @@
 # NOTICE
 
 This repository packages and redistributes upstream software published by
-[korandoru](https://github.com/korandoru). The Apache-2.0 license in
+[FastLabs](https://github.com/fast). The Apache-2.0 license in
 [`LICENSE`](LICENSE) covers the OCX pipeline files authored here. It does
 **not** cover any upstream-derived asset — each package's redistributed bytes
 carry their own license, recorded below.
@@ -18,12 +18,12 @@ and no endorsement is implied.
 
 ## `hawkeye`
 
-Upstream: <https://github.com/korandoru/hawkeye>
+Upstream: <https://github.com/fast/hawkeye>
 Published to `ghcr.io/ocx-contrib/hawkeye/hawkeye`.
 
 | Component | SPDX | Holder |
 |---|---|---|
-| HawkEye (`hawkeye`) | **Apache-2.0** | Copyright korandoru contributors |
+| HawkEye (`hawkeye`) | **Apache-2.0** | Copyright HawkEye contributors |
 
 Permissive; redistribution of the compiled binary is granted provided the
 license and any NOTICE are retained. Upstream ships a `LICENSE` file *inside*

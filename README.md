@@ -1,20 +1,22 @@
 # mirror-hawkeye
 
-OCX mirror for [HawkEye](https://github.com/korandoru/hawkeye). One repository,
+OCX mirror for [HawkEye](https://github.com/fast/hawkeye). One repository,
 one spec directory per package.
 
 | Package | Spec | Publishes to | Announced as | Upstream SPDX |
 |---|---|---|---|---|
-| [hawkeye](https://github.com/korandoru/hawkeye) | [`hawkeye/mirror.yml`](hawkeye/mirror.yml) | `ghcr.io/ocx-contrib/hawkeye/hawkeye` | `ocx.sh/hawkeye/hawkeye` | `Apache-2.0` |
+| [hawkeye](https://github.com/fast/hawkeye) | [`hawkeye/mirror.yml`](hawkeye/mirror.yml) | `ghcr.io/ocx-contrib/hawkeye/hawkeye` | `ocx.sh/hawkeye/hawkeye` | `Apache-2.0` |
 
 Each upstream release is discovered, re-bundled, smoke-tested per
 `(version, platform)` and only then pushed with cascade tags, after which the
 result is announced into the OCX index.
 
 > This repository previously published the same upstream to the flat coordinate
-> `ocx.sh/hawkeye`. `hawkeye/hawkeye` is the grouped successor. Upstream's owner
-> is `korandoru`, which means nothing to someone who does not already know the
-> tool, so the tool names itself.
+> `ocx.sh/hawkeye`. `hawkeye/hawkeye` is the grouped successor: the tool names
+> itself. Upstream's owner was the personal handle `korandoru` when that was
+> chosen and moved to the `fast` org (FastLabs) with v7.0.0 — `fast` is a
+> generic adjective that says nothing about the tool, so the coordinate is
+> unchanged.
 
 ## Layout
 

@@ -7,9 +7,13 @@ name: hawkeye
 # flattened. The first segment must be this repo's own GitHub owner:
 # GITHUB_TOKEN only authorises packages owned by the repo the workflow runs in.
 #
-# Tool-as-namespace: upstream's owner is `korandoru`, which means nothing to
-# someone who does not already know the tool, so the tool names itself — the
-# same rule that gave `elvish/elvish` and `lychee/lychee`.
+# Tool-as-namespace: the tool names itself — the same rule that gave
+# `elvish/elvish` and `lychee/lychee`. Upstream's owner was the personal handle
+# `korandoru` when this was chosen; it moved to the `fast` org (FastLabs) with
+# v7.0.0. `fast` is no better a namespace — it is a generic adjective that says
+# nothing about the tool — so the coordinate is UNCHANGED, and it could not be
+# changed cheaply anyway: `hawkeye/hawkeye` is already published and re-homing
+# it would orphan every consumer pin.
 #
 # Succeeds the flat `ocx.sh/hawkeye` coordinate this repository published
 # before the grouped layout.
@@ -18,8 +22,11 @@ target:
   repository: ocx-contrib/hawkeye/hawkeye
 
 source:
+  # `korandoru/hawkeye` → `fast/hawkeye` (FastLabs), renamed alongside v7.0.0.
+  # GitHub redirects the old path, so discovery kept working — but a redirect
+  # is upstream's courtesy, not a guarantee, so the spec names the real owner.
   type: github_release
-  owner: korandoru
+  owner: fast
   repo: hawkeye
   tag_pattern: "^v(?P<version>\\d+\\.\\d+\\.\\d+)$"
 
@@ -27,7 +34,10 @@ source:
 #
 # hawkeye is a Rust build and upstream ships BOTH `-unknown-linux-gnu` and
 # `-unknown-linux-musl` per arch. This mirror carries the MUSL one on both
-# arches. Measured on v6.5.1:
+# arches. Measured on v6.5.1, and RE-measured on v7.0.0 — a major rewrite is a
+# new toolchain and a new crate graph, so the static claim is re-proven, not
+# inherited (v7.0.0 x86_64: `static-pie linked`, no INTERP, no NEEDED; v7.0.0
+# aarch64: `statically linked`, no INTERP, no NEEDED — identical to v6.5.1):
 #
 #   hawkeye-x86_64-unknown-linux-musl
 #     $ file    → ELF 64-bit LSB pie executable, x86-64, static-pie linked
@@ -60,7 +70,11 @@ source:
 #     host. Container legs (ubuntu + alpine + fedora) live in
 #     ../mirror-base.yml and are what turn "requires nothing" into evidence.
 #
-# ─── Scope (verified against v6.3.0, the first in-range release, and v6.5.1)
+# ─── Scope (verified against v6.3.0, the first in-range release, v6.5.1, and
+# v7.0.0 — the v7 rewrite changed the CONFIG SCHEMA and the report stream, not
+# the release artefacts: asset names, archive layouts, and the platform set
+# keep the same shape. See hawkeye/tests/smoke.star for the schema split that
+# rewrite forced on the smoke test.)
 #
 # Upstream also publishes, and this mirror deliberately does not carry:
 #   hawkeye-*-unknown-linux-gnu.tar.xz   — dynamic twin of a static build
@@ -69,10 +83,11 @@ source:
 #
 # The anchored ^…$ regexes are what keep those out — `…-musl\.tar\.xz$` does
 # not match the `.sha256` sidecar. Resolution verified BOTH ways across EVERY
-# in-range release (all 6 of v6.3.0, v6.4.0, v6.4.1, v6.4.2, v6.5.0, v6.5.1):
-# each of the five patterns matches EXACTLY one asset. A pattern matching zero
-# is silently skipped, not an error — it would yield a green run with a
-# missing platform.
+# in-range release (all 7 of v6.3.0, v6.4.0, v6.4.1, v6.4.2, v6.5.0, v6.5.1,
+# v7.0.0): each of the five patterns matches EXACTLY one asset. A pattern
+# matching zero is silently skipped, not an error — it would yield a green run
+# with a missing platform. v7.0.0 still ships no `aarch64-pc-windows-msvc`, so
+# the windows/arm64 omission stands.
 assets:
   linux/amd64:
     - "^hawkeye-x86_64-unknown-linux-musl\\.tar\\.xz$"
@@ -89,7 +104,8 @@ assets:
 # directory (binary + LICENSE + README + CHANGELOG at the wrapper root, no
 # bin/) → strip_components: 1. The Windows zip is FLAT — `hawkeye.exe` sits at
 # the archive root — so it needs strip_components: 0, or the binary itself
-# would be stripped. Verified on both v6.3.0 and v6.5.1.
+# would be stripped. Verified on v6.3.0, v6.5.1, and v7.0.0 — the v7 rewrite
+# kept both layouts unchanged.
 asset_type:
   default:
     type: archive
@@ -138,7 +154,7 @@ tests:
 
 annotations:
   # From the Phase 1.5 license gate:
-  #   $ gh api repos/korandoru/hawkeye/license --jq '.license.spdx_id'
+  #   $ gh api repos/fast/hawkeye/license --jq '.license.spdx_id'
   #   Apache-2.0
   # Corroborated by the `LICENSE` file shipped inside every release tarball
   # ("Apache License, Version 2.0").
